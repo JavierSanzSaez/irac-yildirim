@@ -1,6 +1,6 @@
 var static = require('node-static');
 
-var https = require('https');
+var http = require('http');
 
 // Change directory to path of current JavaScript program
 var process = require('process');
@@ -18,11 +18,15 @@ var options = {
 // Create a node-static server instance
 var file = new(static.Server)();
 
+var port = process.env.PORT || 8080;
+
+console.log("Listening on port ", port);
+
 // We use the http module�s createServer function and
 // rely on our instance of node-static to serve the files
-var app = https.createServer(options, function (req, res) {
+var app = http.createServer(options, function (req, res) {
   file.serve(req, res);
-}).listen(80);
+}).listen(port);
 
 // Use socket.io JavaScript library for real-time web applications
 var io = require('socket.io')(app);
