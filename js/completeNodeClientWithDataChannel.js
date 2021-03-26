@@ -48,15 +48,10 @@ else {
   console.log("This appears to be other Browser");
 } */
 
-/*
 var pc_config = webrtcDetectedBrowser === 'firefox' ?
   // {'iceServers': [{'urls': 'stun:23.21.150.121'}]} :
   {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}]} :
   {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
-}; */
-
-var pc_config = {
-	'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
 };
 
 var pc_constraints = {
@@ -77,11 +72,13 @@ function trace(text) {
 /////////////////////////////////////////////
 // Let's get started: prompt user for input (room name)
 var room = prompt('Enter room name:');
+console.log("Room entered: ", room);
 
 var urlServer = location.origin;
 console.log("socket.io client connecting to server ", urlServer );
 // Connect to signalling server
 var socket = io.connect(urlServer);
+console.log("socket.io client connected to server ", socket);
 
 // Send 'Create or join' message to singnalling server
 if (room !== '') {
@@ -117,6 +114,7 @@ function handleUserMediaError(error){
 // this peer is the initiator
 socket.on('created', function (room){
   console.log('Created room ' + room);
+  console.log('This peer is the initiator of room ', room);
   isInitiator = true;
 
   // Call getUserMedia()
@@ -136,7 +134,6 @@ socket.on('full', function (room){
 // another peer is joining the channel
 socket.on('join', function (room){
   console.log('Another peer made a request to join room ' + room);
-  console.log('This peer is the initiator of room ' + room + '!');
   isChannelReady = true;
 });
 
@@ -149,6 +146,7 @@ socket.on('joined', function (room){
   // Call getUserMedia()
   navigator.mediaDevices.getUserMedia(constraints).then(handleUserMedia).catch(handleUserMediaError);
   console.log('Getting user media with constraints', constraints);
+  checkAndStart();
 });
 
 // Server-sent log message...
@@ -191,6 +189,9 @@ function sendMessage(message){
 ////////////////////////////////////////////////////
 // Channel negotiation trigger function
 function checkAndStart() {
+  console.log("is Started?: ", isStarted);
+  console.log("localStream?: ", localStream);
+  console.log("isChannelReady?: ", isChannelReady);
   if (!isStarted && typeof localStream != 'undefined' && isChannelReady) {
     createPeerConnection();
     isStarted = true;
