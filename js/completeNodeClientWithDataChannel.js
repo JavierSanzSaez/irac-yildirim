@@ -31,7 +31,7 @@ var remoteStream;
 // Peer Connection
 var pc;
 
-/*
+
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
 
@@ -46,7 +46,7 @@ else if (navigator.webkitGetUserMedia) {
   webrtcDetectedVersion = parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
 else {
   console.log("This appears to be other Browser");
-} */
+}
 
 var pc_config = webrtcDetectedBrowser === 'firefox' ?
   // {'iceServers': [{'urls': 'stun:23.21.150.121'}]} :
