@@ -1,6 +1,6 @@
 var static = require('node-static');
 
-var http = require('http');
+var https = require('https');
 
 // Change directory to path of current JavaScript program
 var process = require('process');
@@ -24,7 +24,7 @@ console.log("Listening on port ", port);
 
 // We use the http module�s createServer function and
 // rely on our instance of node-static to serve the files
-var app = http.createServer(options, function (req, res) {
+var app = https.createServer(options, function (req, res) {
   file.serve(req, res);
 }).listen(port);
 
