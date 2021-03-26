@@ -31,7 +31,7 @@ var remoteStream;
 // Peer Connection
 var pc;
 
-
+/*
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
 
@@ -53,6 +53,8 @@ var pc_config = webrtcDetectedBrowser === 'firefox' ?
   {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}]} :
   {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
 };
+*/
+var pc_config = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
 var pc_constraints = {
   'optional': [ {'DtlsSrtpKeyAgreement': true} ]
@@ -63,7 +65,7 @@ var sdpConstraints = {};
 
 function trace(text) {
   // This function is used for logging.
-  if (text[text.length - 1] == '\n') {
+  if (text[text.length - 1] === '\n') {
     text = text.substring(0, text.length - 1);
   }
   console.log((performance.now() / 1000).toFixed(3) + ": " + text);
