@@ -285,7 +285,7 @@ function handleReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   // If channel ready, enable user's input
-  if (readyState == "open") {
+  if (readyState === "open") {
 	    dataChannelSend.disabled = false;
 	    dataChannelSend.focus();
 	    dataChannelSend.placeholder = "";
@@ -373,3 +373,89 @@ function stop() {
 }
 
 ///////////////////////////////////////////
+// File transfer
+
+const BYTES_PER_CHUNK = 1200;
+var file;
+var currentChunk;
+var fileInput = document.getElementById("my-file");
+var fileReader = new FileReader();
+
+function readNextChunk() {
+  var start = BYTES_PER_CHUNK * currentChunk;
+  var end = Math.min( file.size, start + BYTES_PER_CHUNK );
+  fileReader.readAsArrayBuffer( file.slice( start, end ) );
+}
+
+fileReader.onload = function() {
+  socket.emit("data");
+  sendChannel.send( fileReader.result );
+  currentChunk++;
+
+  while( BYTES_PER_CHUNK * currentChunk < file.size ) {
+    readNextChunk();
+  }
+    readNextChunk();
+
+
+};
+
+fileInput.addEventListener( 'change', function() {
+  console.log("fileInput changed");
+  file = fileInput.files[0];
+  currentChunk = 0;
+  // send some metadata about our file
+  // to the receiver
+  sendChannel.send(JSON.stringify({
+    fileName: file.name,
+    fileSize: file.size
+  }));
+  readNextChunk();
+});
+
+var incomingFileInfo;
+var incomingFileData;
+var bytesReceived;
+var downloadInProgress = false;
+
+socket.on( 'data', data => {
+  if( downloadInProgress === false ) {
+    startDownload( data );
+  } else {
+    progressDownload( data );
+  }
+});
+
+function startDownload( data ) {
+  incomingFileInfo = JSON.parse( data.toString() );
+  incomingFileData = [];
+  bytesReceived = 0;
+  downloadInProgress = true;
+  console.log( 'incoming file <b>' + incomingFileInfo.fileName + '</b> of ' + incomingFileInfo.fileSize + ' bytes' );
+}
+
+function progressDownload( data ) {
+  bytesReceived += data.byteLength;
+  incomingFileData.push( data );
+  console.log( 'progress: ' +  ((bytesReceived / incomingFileInfo.fileSize ) * 100).toFixed( 2 ) + '%' );
+  if( bytesReceived === incomingFileInfo.fileSize ) {
+    endDownload();
+  }
+}
+
+function endDownload() {
+  downloadInProgress = false;
+  var blob = new window.Blob( incomingFileData );
+  var anchor = document.createElement( 'a' );
+  anchor.href = URL.createObjectURL( blob );
+  anchor.download = incomingFileInfo.fileName;
+  anchor.textContent = 'XXXXXXX';
+
+  if( anchor.click ) {
+    anchor.click();
+  } else {
+    var evt = document.createEvent( 'MouseEvents' );
+    evt.initMouseEvent( 'click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null );
+    anchor.dispatchEvent( evt );
+  }
+}
